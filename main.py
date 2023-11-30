@@ -19,14 +19,15 @@
 # In[1]:
 
 
-#!pip install transformers
-# get_ipython().run_line_magic('pip', 'install torchtext')
+# %pip install torchtext
 
 
-# In[2]:
+# In[3]:
 
 
 import torch
+import torchtext
+print(torchtext.__version__)
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -42,6 +43,8 @@ import numpy as np
 import time
 import random
 import functools
+
+import os
 
 from datasets import load_dataset
 
@@ -512,27 +515,31 @@ def epoch_time(start_time, end_time):
 # In[311]:
 
 
-N_EPOCHS = 1
+model_path = 'models/pos-tagging-model.pt'
 
-best_valid_loss = float('inf')
+with open(model_path, 'rb') as f:
+    model.load_state_dict(torch.load(f))
 
-for epoch in range(N_EPOCHS):
-    start_time = time.time()
-    
-    train_loss, train_acc = train(model, train_iterator, optimizer, criterion, TAG_PAD_IDX)
-    valid_loss, valid_acc = evaluate(model, valid_iterator, criterion, TAG_PAD_IDX)
-    
-    end_time = time.time()
+# N_EPOCHS = 10
+# best_valid_loss = float('inf')
 
-    epoch_mins, epoch_secs = epoch_time(start_time, end_time)
+# for epoch in range(N_EPOCHS):
+#     start_time = time.time()
     
-    if valid_loss < best_valid_loss:
-        best_valid_loss = valid_loss
-        torch.save(model.state_dict(), 'tut2-model.pt')
+#     train_loss, train_acc = train(model, train_iterator, optimizer, criterion, TAG_PAD_IDX)
+#     valid_loss, valid_acc = evaluate(model, valid_iterator, criterion, TAG_PAD_IDX)
     
-    print('Epoch: %02d | Epoch Time: %dm %ds' % (epoch+1, epoch_mins, epoch_secs))
-    print('\tTrain Loss: %.3f | Train Acc: %.2f%%' % (train_loss, train_acc*100))
-    print('\t Val. Loss: %.3f |  Val. Acc: %.2f%%' % (valid_loss, valid_acc*100))
+#     end_time = time.time()
+
+#     epoch_mins, epoch_secs = epoch_time(start_time, end_time)
+    
+#     if valid_loss < best_valid_loss:
+#         best_valid_loss = valid_loss
+#         torch.save(model.state_dict(), model_path)
+    
+#     print('Epoch: %02d | Epoch Time: %dm %ds' % (epoch+1, epoch_mins, epoch_secs))
+#     print('\tTrain Loss: %.3f | Train Acc: %.2f%%' % (train_loss, train_acc*100))
+#     print('\t Val. Loss: %.3f |  Val. Acc: %.2f%%' % (valid_loss, valid_acc*100))
 
 
 # We can then load our "best" performing model and try it out on the test set. 
@@ -542,11 +549,11 @@ for epoch in range(N_EPOCHS):
 # In[ ]:
 
 
-model.load_state_dict(torch.load('tut2-model.pt'))
+# model.load_state_dict(torch.load(model_path))
 
-test_loss, test_acc = evaluate(model, test_iterator, criterion, TAG_PAD_IDX)
+# test_loss, test_acc = evaluate(model, test_iterator, criterion, TAG_PAD_IDX)
 
-print('Test Loss: %.3f | Test Acc: %.2f%%' % (test_loss, test_acc*100))
+# print('Test Loss: %.3f | Test Acc: %.2f%%' % (test_loss, test_acc*100))
 
 
 # ## Inference
@@ -562,37 +569,37 @@ print('Test Loss: %.3f | Test Acc: %.2f%%' % (test_loss, test_acc*100))
 # In[ ]:
 
 
-def tag_sentence(model, device, sentence, tokenizer, text_field, tag_field):
+# def tag_sentence(model, device, sentence, tokenizer, text_field, tag_field):
     
-    model.eval()
+#     model.eval()
     
-    if isinstance(sentence, str):
-        tokens = tokenizer.tokenize(sentence)
-    else:
-        tokens = sentence
+#     if isinstance(sentence, str):
+#         tokens = tokenizer.tokenize(sentence)
+#     else:
+#         tokens = sentence
     
-    numericalized_tokens = tokenizer.convert_tokens_to_ids(tokens)
-    numericalized_tokens = [text_field.init_token] + numericalized_tokens
+#     numericalized_tokens = tokenizer.convert_tokens_to_ids(tokens)
+#     numericalized_tokens = [text_field.init_token] + numericalized_tokens
         
-    unk_idx = text_field.unk_token
+#     unk_idx = text_field.unk_token
     
-    unks = [t for t, n in zip(tokens, numericalized_tokens) if n == unk_idx]
+#     unks = [t for t, n in zip(tokens, numericalized_tokens) if n == unk_idx]
     
-    token_tensor = torch.LongTensor(numericalized_tokens)
+#     token_tensor = torch.LongTensor(numericalized_tokens)
     
-    token_tensor = token_tensor.unsqueeze(-1).to(device)
+#     token_tensor = token_tensor.unsqueeze(-1).to(device)
          
-    predictions = model(token_tensor)
+#     predictions = model(token_tensor)
     
-    top_predictions = predictions.argmax(-1)
+#     top_predictions = predictions.argmax(-1)
     
-    predicted_tags = [tag_field.vocab.itos[t.item()] for t in top_predictions]
+#     predicted_tags = [tag_field.vocab.itos[t.item()] for t in top_predictions]
     
-    predicted_tags = predicted_tags[1:]
+#     predicted_tags = predicted_tags[1:]
         
-    assert len(tokens) == len(predicted_tags)
+#     assert len(tokens) == len(predicted_tags)
     
-    return tokens, predicted_tags, unks
+#     return tokens, predicted_tags, unks
 
 
 # We can then run an example sentence through our model and receive the predicted tags.
@@ -600,16 +607,16 @@ def tag_sentence(model, device, sentence, tokenizer, text_field, tag_field):
 # In[ ]:
 
 
-sentence = 'The Queen will deliver a speech about the conflict in North Korea at 1pm tomorrow.'
+# sentence = 'A rainha vai dar um discusso sobre o conflito na Síria amanhã.'
 
-tokens, tags, unks = tag_sentence(model, 
-                                  device, 
-                                  sentence,
-                                  tokenizer,
-                                  TEXT, 
-                                  UD_TAGS)
+# tokens, tags, unks = tag_sentence(model, 
+#                                   device, 
+#                                   sentence,
+#                                   tokenizer,
+#                                   TEXT, 
+#                                   UD_TAGS)
 
-print(unks)
+# print(unks)
 
 
 # We can then print out the tokens and their corresponding tags.
@@ -619,10 +626,10 @@ print(unks)
 # In[ ]:
 
 
-print("Pred. Tag\tToken\n")
+# print("Pred. Tag\tToken\n")
 
-for token, tag in zip(tokens, tags):
-    print("%s\t\t%s" % (tag, token))
+# for token, tag in zip(tokens, tags):
+#     print("%s\t\t%s" % (tag, token))
 
 
 # We've now fine-tuned a BERT model for part-of-speech tagging! Well done us!

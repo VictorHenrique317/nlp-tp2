@@ -1,0 +1,1 @@
+jupyter nbconvert --to script main.ipynb ; git add .; git commit -m "Developing"; git push
