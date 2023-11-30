@@ -20,7 +20,7 @@
 
 
 #!pip install transformers
-get_ipython().run_line_magic('pip', 'install torchtext')
+# get_ipython().run_line_magic('pip', 'install torchtext')
 
 
 # In[2]:
