@@ -2,6 +2,9 @@
 VOLUME_NAME="nlp_tp2_volume"
 NAME="nlp_tp2"
 
+git pull
+docker build -t $NAME:latest .
+
 # Unmounting and clearing volumes from the main image
 CONTAINERS=$(docker ps -a --filter volume=$VOLUME_NAME -q)
 
