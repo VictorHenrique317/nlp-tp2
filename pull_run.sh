@@ -19,7 +19,7 @@ echo "Volume $VOLUME_NAME removed!"
 
 docker volume create $VOLUME_NAME
 echo -e "\n"
-docker run -v $VOLUME_NAME:/app $NAME:latest python3 main.py
+docker run -v $VOLUME_NAME:/app $NAME:latest
 
 # Copying volume files to disk
 if [ -d "models" ]; then
