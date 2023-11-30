@@ -517,7 +517,7 @@ def epoch_time(start_time, end_time):
 
 model_path = 'models/pos-tagging-model.pt'
 
-with open(model_path, 'rb') as f:
+with open("models", 'rb') as f:
     model.load_state_dict(torch.load(f))
 
 # N_EPOCHS = 10
