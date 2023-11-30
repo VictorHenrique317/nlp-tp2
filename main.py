@@ -517,8 +517,10 @@ def epoch_time(start_time, end_time):
 
 model_path = 'models/pos-tagging-model.pt'
 
-with open("models", 'rb') as f:
-    model.load_state_dict(torch.load(f))
+# write a new test file inside models named test.txt
+with open('models/test.txt', 'w') as f:
+    test_line = 'O rato roeu a roupa do rei de roma'
+    f.write(test_line)
 
 # N_EPOCHS = 10
 # best_valid_loss = float('inf')
